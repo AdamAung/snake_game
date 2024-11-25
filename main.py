@@ -17,6 +17,7 @@ class Snake:
 
     def move_snake(self):
         self.body.insert(0, self.body[0] + self.direction)
+        # remove the last element of the body array
         self.body.pop()
 
 
@@ -24,18 +25,26 @@ class Fruit:
     def __init__(self):
         self.x = random.randint(0, cell_number)
         self.y = random.randint(0, cell_number)
-        self.pos = Vector2(self.x, self.y)
+        self.fruit_pos = Vector2(self.x, self.y)
 
     def draw_fruit(self):
-        fruit_rect = pygame.Rect(int(self.pos.x * cell_size), int(self.pos.y * cell_size), 10, 10)
+        fruit_rect = pygame.Rect(int(self.fruit_pos.x * 10), int(self.fruit_pos.y * 10), 10, 10)
         pygame.draw.rect(screen, pygame.Color('blue'), fruit_rect)
 
+class Main:
+    def __init__(self):
+        self.snake = Snake()
+        self.fruit = Fruit()
 
-# class Main:
-#     def __init__(self):
-#         self.snake = Snake()
-#         self.fruit = Fruit()
-#
+    def draw_main(self):
+        self.snake.draw_snake()
+        self.fruit.draw_fruit()
+
+    def collision(self):
+        if self.snake.body[0] == self.fruit.fruit_pos:
+            # code
+            print("Collision is happened")
+
 
 pygame.init()
 
@@ -45,8 +54,7 @@ cell_number = 20
 screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number))
 clock = pygame.time.Clock()
 
-snake = Snake()
-fruit = Fruit()
+main = Main()
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE, 100)
@@ -57,19 +65,20 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == SCREEN_UPDATE:
-            snake.move_snake()
+            main.snake.move_snake()
+            main.collision()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                snake.direction = Vector2(0, -1)
+                main.snake.direction = Vector2(0, -1)
             if event.key == pygame.K_DOWN:
-                snake.direction = Vector2(0, 1)
+                main.snake.direction = Vector2(0, 1)
             if event.key == pygame.K_LEFT:
-                snake.direction = Vector2(-1, 0)
+                main.snake.direction = Vector2(-1, 0)
             if event.key == pygame.K_RIGHT:
-                snake.direction = Vector2(1, 0)
+                main.snake.direction = Vector2(1, 0)
         # Draw all our elements
     screen.fill((0, 0, 0))
-    fruit.draw_fruit()
-    snake.draw_snake()
+    main.draw_main()
+
     pygame.display.update()
     clock.tick(60)
