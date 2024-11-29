@@ -1,0 +1,13 @@
+The entire python game is written with pygame library.
+
+The logic of snake move -
+    1. The block is depends on x, y axis
+    2. The first block is added and the last block(tail of snake) is removed
+
+The fruit -
+    1. Put that randomly on the screen
+    2. After the collision, which snake and fruit hit, the fruit will reposition
+
+The action -
+    1. Snake head hit the wall - game over
+    2. Snake head hit itself body - game over
