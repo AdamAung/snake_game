@@ -10,8 +10,8 @@ class Snake:
 
     def draw_snake(self):
         for block in self.body:
-            x_pos = int(block.x * 10)
-            y_pos = int(block.y * 10)
+            x_pos = int(block.x * cell_size)
+            y_pos = int(block.y * cell_size)
             block_rect = pygame.Rect(x_pos, y_pos, cell_size, cell_size)
             pygame.draw.rect(screen, (183, 111, 122), block_rect)
 
@@ -30,9 +30,9 @@ class Snake:
         self.new_block = True
 
 def random_pos():
-    x = random.randint(0, cell_number - 1 )
-    y = random.randint(0, cell_number - 1)
-    return x * cell_size , y * cell_size
+    x = random.randint(0, cell_number - 1 ) * cell_size
+    y = random.randint(0, cell_number - 1) * cell_size
+    return x, y
 
 def target_fruit():
     return random.randint(0, 2)
@@ -58,21 +58,15 @@ class Map:
 
     # Need to add Fruits graphics
 
-
-class Text:
-    def __init__(self):
-        self.position = Vector2( (cell_number * cell_size) / 2.5, 20)
-        self.text = "Welcome to Snake!"
-
 class Main:
     def __init__(self):
         self.snake = Snake()
         self.fruit = Fruit()
-        self.text = Text()
-        self.game_start = True
+        
 
     def game_over(self):
-        self.game_start = False
+        pygame.quit()
+        sys.exit()
 
     def update(self):
         self.snake.move_snake()
@@ -93,7 +87,7 @@ class Main:
 
     def collision(self):
         target_pos = self.fruit.fruit_pos[self.fruit.target_fruit]
-        snake_head = self.snake.body[0]
+        snake_head = self.snake.body[0] * cell_size
 
         # snake head and target fruit collision check
         if snake_head == target_pos:
@@ -116,6 +110,7 @@ cell_number = 90
 
 screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number))
 clock = pygame.time.Clock()
+pygame.display.set_caption("Welcome to Snake game!")
 
 font = pygame.font.SysFont("comics", 30)
 
@@ -126,11 +121,10 @@ text_surface = font.render(main.text.text, True, pygame.Color("Red"))
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE, 150)
 
-while main.game_start:
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            main.game_over()
 
         if event.type == SCREEN_UPDATE:
             main.update()
@@ -151,7 +145,6 @@ while main.game_start:
 
     # Draw all our elements
     screen.fill((0, 0, 0))
-    screen.blit(text_surface, main.text.position)
     main.draw_main()
     pygame.display.update()
     clock.tick(60)
