@@ -7,13 +7,21 @@ class Snake:
         self.body = [Vector2(3, 10), Vector2(2, 10), Vector2(1, 10)]
         self.direction = Vector2(1, 0)
         self.new_block = False
+        self.head_up = pygame.image.load('Graphics/snake_up.png').convert_alpha()
+        self.head_down = pygame.image.load('Graphics/snake_down.png').convert_alpha()
+        self.head_right = pygame.image.load('Graphics/snake_right.png').convert_alpha()
+        self.head_left = pygame.image.load('Graphics/snake_left.png').convert_alpha()
 
     def draw_snake(self):
-        for block in self.body:
+        for index, block in enumerate(self.body):
             x_pos = int(block.x * cell_size)
             y_pos = int(block.y * cell_size)
             block_rect = pygame.Rect(x_pos, y_pos, cell_size, cell_size)
-            pygame.draw.rect(screen, (183, 111, 122), block_rect)
+            scaled_image = pygame.transform.scale(self.head_right, (cell_size , cell_size ))
+            if index == 0:
+                screen.blit(scaled_image, block_rect)
+            else:
+                pygame.draw.rect(screen, (183, 111, 122), block_rect)
 
     def move_snake(self):
         if self.new_block:
@@ -38,6 +46,11 @@ def target_fruit():
     return random.randint(0, 2)
 
 class Fruit:
+
+    # Categories theme
+
+
+
     def __init__(self):
         self.target_fruit = target_fruit()
         self.fruit_pos = [Vector2(random_pos()), Vector2(random_pos()), Vector2(random_pos())]
@@ -50,7 +63,23 @@ class Fruit:
 
 class Map:
     def __init__(self):
-        pass
+        self.grass_color = (182, 220, 78)
+        self.grass_color2 = (176,219, 69)
+
+    def draw_grass(self):
+        for row in range(cell_number):
+            if row % 2 == 0:
+                for col in range(cell_number):
+                    if col % 2 == 0:
+                        grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                        pygame.draw.rect(screen,self.grass_color,grass_rect )
+            else:
+                for col in range(cell_number):
+                    if col % 2 != 0:
+                        grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                        pygame.draw.rect(screen, self.grass_color, grass_rect)
+
+
 
     # Need to add map layouts graphics
 
@@ -62,7 +91,7 @@ class Main:
     def __init__(self):
         self.snake = Snake()
         self.fruit = Fruit()
-        
+        self.map = Map()
 
     def game_over(self):
         pygame.quit()
@@ -82,6 +111,7 @@ class Main:
                 self.game_over()
 
     def draw_main(self):
+        self.map.draw_grass()
         self.snake.draw_snake()
         self.fruit.draw_fruit()
 
@@ -97,7 +127,6 @@ class Main:
             # Reposition fruits
             self.fruit.fruit_pos = [Vector2(random_pos()), Vector2(random_pos()), Vector2(random_pos())]
 
-
         # check between snake head is hitting other fruits which is not target fruit
         for fruits in self.fruit.fruit_pos:
             if fruits != target_pos and snake_head == fruits:
@@ -105,8 +134,8 @@ class Main:
 
 pygame.init()
 
-cell_size = 10
-cell_number = 90
+cell_size = 30
+cell_number = 30
 
 screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number))
 clock = pygame.time.Clock()
@@ -116,10 +145,8 @@ font = pygame.font.SysFont("comics", 30)
 
 main = Main()
 
-text_surface = font.render(main.text.text, True, pygame.Color("Red"))
-
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE, 150)
+pygame.time.set_timer(SCREEN_UPDATE, 200)
 
 while True:
     for event in pygame.event.get():
@@ -144,7 +171,7 @@ while True:
                     main.snake.direction = Vector2(1, 0)
 
     # Draw all our elements
-    screen.fill((0, 0, 0))
+    screen.fill(main.map.grass_color2)
     main.draw_main()
     pygame.display.update()
     clock.tick(60)
