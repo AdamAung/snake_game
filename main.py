@@ -62,13 +62,13 @@ class Fruit:
         self.text_surface = None
         self.target_fruit = target_fruit()
         self.fruit_pos = [ Vector2(random_pos()), Vector2(random_pos()), Vector2(random_pos()) ]
-        self.apple = pygame.image.load(os.path.join("Graphics", "apple.png"))
+        self.straw_berry = pygame.image.load(os.path.join("Graphics", "straw_berry.png"))
         self.banana = pygame.image.load(os.path.join("Graphics", "banana.png"))
         self.coconet = pygame.image.load(os.path.join("Graphics", "coconet.png"))
         self.orange = pygame.image.load(os.path.join("Graphics", "orange.png"))
         self.pineapple = pygame.image.load(os.path.join("Graphics", "pineapple.png"))
         self.water_melon = pygame.image.load(os.path.join("Graphics", "water_melon.png"))
-        self.fruit_theme1 = [ {"text": "Apple", "image": self.apple},
+        self.fruit_theme1 = [ {"text": "Straw Berry", "image": self.straw_berry},
                               {"text": "Banana", "image": self.banana},
                               {"text": "Coconet", "image": self.coconet} ]
         self.fruit_theme2 = [ {"text": "Orange", "image": self.orange},
@@ -203,7 +203,7 @@ button_gap = 5
 cell_size = 24
 cell_number = 24
 
-screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number))
+screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number), pygame.RESIZABLE)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Welcome to Snake game!")
 
