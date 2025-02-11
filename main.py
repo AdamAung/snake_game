@@ -3,6 +3,7 @@ import random
 import asyncio
 import pygame
 import sys
+
 from pygame.math import Vector2
 
 class Snake:
@@ -110,12 +111,26 @@ class Fruit:
                 fruit_text = block[ 'text' ]
         self.text_surface = font.render(f"Find {fruit_text}", True, (0, 0, 0))
 
+
+def draw(position, color, image, scale=3.2):
+
+    pygame.draw.rect(screen, color, position)
+          # Smaller font size for 24x24 screen
+    resized_image_up = pygame.transform.scale(image, (cell_size * scale, cell_size * scale))
+    screen.blit(resized_image_up, (position.x, position.y))
+
+def image_insertion(path,png):
+    return pygame.image.load(os.path.join(path, png ))
+
+
 class Button:
     def __init__(self):
-        self.arrow_image_up = pygame.image.load(os.path.join("Button", "arrow_up.png"))
-        self.arrow_image_down = pygame.image.load(os.path.join("Button", "arrow_down.png"))
-        self.arrow_image_left = pygame.image.load(os.path.join("Button", "arrow_left.png"))
-        self.arrow_image_right = pygame.image.load(os.path.join("Button", "arrow_right.png"))
+        self.restart_btn = image_insertion("Button", "restart_btn .png")
+        self.quit_btn = None # need to insert quit button
+        self.arrow_image_up = image_insertion("Button", "arrow_up.png")
+        self.arrow_image_down = image_insertion("Button", "arrow_down.png")
+        self.arrow_image_left = image_insertion("Button", "arrow_left.png")
+        self.arrow_image_right = image_insertion("Button", "arrow_right.png")
         self.Width = cell_size * cell_number
         self.left_button = pygame.Rect(button_gap, self.Width - button_size * 2 - button_gap, button_size, button_size)
         self.down_button = pygame.Rect(button_size + button_gap * 2, self.Width - button_size - button_gap, button_size,
@@ -124,22 +139,23 @@ class Button:
                                 button_size)
         self.right_button = pygame.Rect(button_size * 2 + button_gap * 3, self.Width - button_size * 2 - button_gap, button_size,
                                    button_size)
+        self.restart_btn_axis = pygame.Rect(self.Width // 2 - button_width // 2, self.Width // 2 - (button_height + gap) // 2 - button_height // 2, button_width, button_height )
 
     def draw_button(self):
-        pygame.draw.rect(screen, (255, 255, 255), self.up_button)
-        pygame.draw.rect(screen, (255, 255, 255), self.down_button)
-        pygame.draw.rect(screen, (255, 255, 255), self.left_button)
-        pygame.draw.rect(screen, (255, 255, 255), self.right_button)
+        draw(self.left_button, (202, 228, 241), self.arrow_image_left)
+        draw(self.down_button, (202, 228, 241), self.arrow_image_down)
+        draw(self.right_button, (202, 228, 241), self.arrow_image_right)
+        draw(self.up_button, (202, 228, 241), self.arrow_image_up)
 
-        font = pygame.font.Font(None, 14)  # Smaller font size for 24x24 screen
-        resized_image_up = pygame.transform.scale(self.arrow_image_up, (cell_size * 3 , cell_size * 3))
-        resized_image_down = pygame.transform.scale(self.arrow_image_down, (cell_size * 3, cell_size * 3))
-        resized_image_left = pygame.transform.scale(self.arrow_image_left, (cell_size * 3, cell_size * 3))
-        resized_image_right = pygame.transform.scale(self.arrow_image_right, (cell_size * 3, cell_size * 3))
-        screen.blit(resized_image_up, (self.up_button.x, self.up_button.y))
-        screen.blit(resized_image_down, (self.down_button.x, self.down_button.y))
-        screen.blit(resized_image_left, (self.left_button.x, self.left_button.y))
-        screen.blit(resized_image_right, (self.right_button.x, self.right_button.y))
+        draw(self.restart_btn_axis, (202, 228, 241), self.restart_btn, scale=7)
+
+        ### need to insert draw function of quit buttom ###
+
+
+def game_over():
+    pygame.quit()
+    sys.exit()
+
 
 class Game:
     def __init__(self):
@@ -148,22 +164,23 @@ class Game:
         self.score = 0
         self.button = Button()
 
-    def game_over(self):
-        pygame.quit()
-        sys.exit()
-
     def update(self):
         self.snake.move_snake()
         self.collision()
         self.check_fail()
 
+    def restart(self):
+        self.snake.body = [ Vector2(4, 10), Vector2(3, 10), Vector2(2, 10), Vector2(1, 10) ]
+        self.fruit.fruit_pos = [ Vector2(random_pos()), Vector2(random_pos()), Vector2(random_pos()) ]
+        self.score = 0
+
     def check_fail(self):
         if not 0 <= self.snake.body[ 0 ].x < cell_number or not 0 <= self.snake.body[ 0 ].y < cell_number:
-            self.game_over()
+            game_over()
 
         for blocks in self.snake.body[ 1: ]:
             if blocks == self.snake.body[ 0 ]:
-                self.game_over()
+                game_over()
 
     def draw_main(self):
         font = pygame.font.SysFont("comics", 30)
@@ -193,17 +210,55 @@ class Game:
         # check between snake head is hitting other fruits which is not target fruit
         for fruits in self.fruit.fruit_pos:
             if fruits != target_pos and snake_head == fruits:
-                self.game_over()
+                # showing the covered up screen that contain restart and quit
+                game_over()
 
 pygame.init()
 
-button_size = 50
-button_gap = 5
+button_size = 75
+button_gap = 2
+
+gap = 20 # this gap value is for buttons of "restart" and "quit"
+
+button_width = 180
+button_height = 90
 
 cell_size = 24
 cell_number = 24
 
-screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number), pygame.RESIZABLE)
+# if quit:
+    # game_run = false
+
+# replace covered display to game_over()
+
+# game_over function need to call when selection is "quit"
+
+# game_over function will be implemented with draw function that showing "Game Over"
+
+
+
+
+# Default to desktop mode
+device_type = "desktop"  # Will be updated by JavaScript
+
+# Function to set the detected device type (called from JavaScript)
+def set_device_type(value):
+    global device_type
+    device_type = value
+    print(f"Device type detected: {device_type}")
+
+# Wait for JavaScript to send data before setting the screen mode
+pygame.time.wait(2000)
+
+# Set display mode based on detected device type
+if device_type == "mobile":
+    screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h), pygame.FULLSCREEN | pygame.SCALED)
+
+else:
+    screen = pygame.display.set_mode((cell_size * cell_number, cell_size * cell_number), pygame.RESIZABLE)
+
+print(f"Running in {device_type} mode.")
+
 clock = pygame.time.Clock()
 pygame.display.set_caption("Welcome to Snake game!")
 
@@ -216,7 +271,7 @@ async def main():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                game.game_over()
+                game_over()
 
             if event.type == SCREEN_UPDATE:
                 game.update()
@@ -251,7 +306,7 @@ async def main():
 
 
         # Draw all our elements
-        screen.fill((255, 255, 255))
+        screen.fill((202, 228, 241))
 
         game.draw_main()
         pygame.display.update()
