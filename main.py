@@ -37,28 +37,19 @@ class Snake:
     def add_block(self):
         self.new_block = True
 
-
 def random_pos():
     x = random.randint(0, cell_number - 1) * cell_size
     y = random.randint(0, cell_number - 1) * cell_size
     return x, y
-
 
 def target_fruit():
     return random.randint(0, 2)
 
 # generate index for theme in fruit class
 def random_theme():
-    return random.randint(0, 1)
+    return random.randint(0, 2)
 
 class Fruit:
-
-    # categories theme
-    # fruit_target
-    # fetch the text and path from json
-    # display graphics whereas the text in the middle of the screen
-    # if target fruit hit, the score increase
-
     def __init__(self):
         self.text_surface = None
         self.target_fruit = target_fruit()
@@ -69,18 +60,27 @@ class Fruit:
         self.orange = pygame.image.load(os.path.join("Graphics", "orange.png"))
         self.pineapple = pygame.image.load(os.path.join("Graphics", "pineapple.png"))
         self.water_melon = pygame.image.load(os.path.join("Graphics", "water_melon.png"))
+        self.grape = pygame.image.load(os.path.join("Graphics", "grape.png"))
+        self.red_berry = pygame.image.load(os.path.join("Graphics", "red_berry.png"))
+        self.avocado = pygame.image.load(os.path.join("Graphics", "avocado.png"))
         self.fruit_theme1 = [ {"text": "Straw Berry", "image": self.straw_berry},
                               {"text": "Banana", "image": self.banana},
                               {"text": "Coconet", "image": self.coconet} ]
         self.fruit_theme2 = [ {"text": "Orange", "image": self.orange},
                               {"text": "Pineapple", "image": self.pineapple},
                               {"text": "Water Melon", "image": self.water_melon} ]
+        self.fruit_theme3 = [ {"text": "Grape", "image": self.grape},
+                              {"text": "Red Berry", "image": self.red_berry},
+                              {"text": "Avocado", "image": self.avocado} ]
         self.theme = [
             {
                 "theme": self.fruit_theme1,
                 "complete": False,
             }, {
                 "theme": self.fruit_theme2,
+                "complete": False,
+            }, {
+                "theme": self.fruit_theme3,
                 "complete": False,
             }
         ]
@@ -89,12 +89,13 @@ class Fruit:
         # error - there is 2 themes, so after two correctness, the target range will out of bounces
         self.target_theme = random_theme()
 
-        # need to apple two fruits that unknown
+    def restart_theme(self):
+        for x in self.theme:
+            x["complete"] = False
 
     def draw_fruit(self):
         font = pygame.font.SysFont("comics", 30)
         theme = self.theme[ self.target_theme ][ 'theme' ]
-
 
         if self.theme[self.target_theme]['complete']:
             self.target_theme = random_theme()
@@ -102,7 +103,7 @@ class Fruit:
             theme = self.theme[self.target_theme]['theme']
         for index, block in enumerate(self.fruit_pos):
             fruit_data = theme[index % len(theme)]
-            resized_image = pygame.transform.scale(fruit_data['image'], (cell_size + 5, cell_size + 5))
+            resized_image = pygame.transform.scale(fruit_data['image'], (cell_size + 6, cell_size + 6))
             screen.blit(resized_image, (int(block.x), int(block.y)))
 
         fruit_text = ''
@@ -110,7 +111,6 @@ class Fruit:
             if index == game.fruit.target_fruit:
                 fruit_text = block[ 'text' ]
         self.text_surface = font.render(f"Find {fruit_text}", True, (0, 0, 0))
-
 
 def draw(position, color, image, scale=3.2):
 
@@ -122,11 +122,9 @@ def draw(position, color, image, scale=3.2):
 def image_insertion(path,png):
     return pygame.image.load(os.path.join(path, png ))
 
-
 class Button:
     def __init__(self):
-        self.restart_btn = image_insertion("Button", "restart_btn .png")
-        self.quit_btn = None # need to insert quit button
+        self.replay_btn = image_insertion("Button", "Replay.png")
         self.arrow_image_up = image_insertion("Button", "arrow_up.png")
         self.arrow_image_down = image_insertion("Button", "arrow_down.png")
         self.arrow_image_left = image_insertion("Button", "arrow_left.png")
@@ -139,7 +137,7 @@ class Button:
                                 button_size)
         self.right_button = pygame.Rect(button_size * 2 + button_gap * 3, self.Width - button_size * 2 - button_gap, button_size,
                                    button_size)
-        self.restart_btn_axis = pygame.Rect(self.Width // 2 - button_width // 2, self.Width // 2 - (button_height + gap) // 2 - button_height // 2, button_width, button_height )
+        self.replay_botton = pygame.Rect((self.Width - self.replay_btn.get_width()) // 2, (self.Width - self.replay_btn.get_height()) // 2, self.replay_btn.get_width(), self.replay_btn.get_height())
 
     def draw_button(self):
         draw(self.left_button, (202, 228, 241), self.arrow_image_left)
@@ -147,15 +145,13 @@ class Button:
         draw(self.right_button, (202, 228, 241), self.arrow_image_right)
         draw(self.up_button, (202, 228, 241), self.arrow_image_up)
 
-        draw(self.restart_btn_axis, (202, 228, 241), self.restart_btn, scale=7)
-
-        ### need to insert draw function of quit buttom ###
-
+    def menu_button(self):
+        screen.fill((202, 228, 241))
+        draw(self.replay_botton, (202, 228, 241), self.replay_btn, scale=3)
 
 def game_over():
     pygame.quit()
     sys.exit()
-
 
 class Game:
     def __init__(self):
@@ -163,6 +159,7 @@ class Game:
         self.fruit = Fruit()
         self.score = 0
         self.button = Button()
+        self.current_screen = GAME
 
     def update(self):
         self.snake.move_snake()
@@ -176,11 +173,11 @@ class Game:
 
     def check_fail(self):
         if not 0 <= self.snake.body[ 0 ].x < cell_number or not 0 <= self.snake.body[ 0 ].y < cell_number:
-            game_over()
+            self.current_screen = MENU
 
         for blocks in self.snake.body[ 1: ]:
             if blocks == self.snake.body[ 0 ]:
-                game_over()
+                self.current_screen = MENU
 
     def draw_main(self):
         font = pygame.font.SysFont("comics", 30)
@@ -211,7 +208,7 @@ class Game:
         for fruits in self.fruit.fruit_pos:
             if fruits != target_pos and snake_head == fruits:
                 # showing the covered up screen that contain restart and quit
-                game_over()
+                self.current_screen = MENU
 
 pygame.init()
 
@@ -220,23 +217,11 @@ button_gap = 2
 
 gap = 20 # this gap value is for buttons of "restart" and "quit"
 
-button_width = 180
-button_height = 90
-
 cell_size = 24
 cell_number = 24
 
-# if quit:
-    # game_run = false
-
-# replace covered display to game_over()
-
-# game_over function need to call when selection is "quit"
-
-# game_over function will be implemented with draw function that showing "Game Over"
-
-
-
+MENU = "menu"
+GAME = "game"
 
 # Default to desktop mode
 device_type = "desktop"  # Will be updated by JavaScript
@@ -267,8 +252,10 @@ game = Game()
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE, 200)
 
+running = True
+
 async def main():
-    while True:
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over()
@@ -276,17 +263,17 @@ async def main():
             if event.type == SCREEN_UPDATE:
                 game.update()
 
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     if game.snake.direction.y != 1:
                         game.snake.direction = Vector2(0, -1)
-                if event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN:
                     if game.snake.direction.y != -1:
                         game.snake.direction = Vector2(0, 1)
-                if event.key == pygame.K_LEFT:
+                elif event.key == pygame.K_LEFT:
                     if game.snake.direction.x != 1:
                         game.snake.direction = Vector2(-1, 0)
-                if event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     if game.snake.direction.x != -1:
                         game.snake.direction = Vector2(1, 0)
 
@@ -294,21 +281,27 @@ async def main():
                 if game.button.left_button.collidepoint(event.pos):
                     if game.snake.direction.x != 1:
                         game.snake.direction = Vector2(-1, 0)
-                if game.button.right_button.collidepoint(event.pos):
+                elif game.button.right_button.collidepoint(event.pos):
                     if game.snake.direction.x != -1:
                         game.snake.direction = Vector2(1, 0)
-                if game.button.up_button.collidepoint(event.pos):
+                elif game.button.up_button.collidepoint(event.pos):
                     if game.snake.direction.y != 1:
                         game.snake.direction = Vector2(0, -1)
-                if game.button.down_button.collidepoint(event.pos):
+                elif game.button.down_button.collidepoint(event.pos):
                     if game.snake.direction.y != -1:
                         game.snake.direction = Vector2(0, 1)
-
+                elif game.button.replay_botton.collidepoint(event.pos):
+                    game.restart()
+                    game.current_screen = GAME
+                    game.fruit.restart_theme()
 
         # Draw all our elements
         screen.fill((202, 228, 241))
 
-        game.draw_main()
+        if game.current_screen == GAME:
+            game.draw_main()
+        elif game.current_screen == MENU:
+            game.button.menu_button()
         pygame.display.update()
         clock.tick(60)
         await asyncio.sleep(0)

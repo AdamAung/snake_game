@@ -434,27 +434,6 @@ frameborder="1"
 
     }
 
-    function isMobile() {
-        return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    function sendDeviceType() {
-        let deviceType = isMobile() ? "mobile" : "desktop";
-        console.log("Detected device:", deviceType);
-
-        // Send data to Pygbag
-        window.pyodide.runPythonAsync(`
-            import asyncio
-            from pyodide.ffi import to_js
-            from js import console
-
-            console.log("Python received device type: ${deviceType}")
-            device_type = "${deviceType}"
-        `);
-    }
-
-    setTimeout(sendDeviceType, 1000); // Delay to allow Pygbag to initialize
-
     function custom_prerun(){
         // no python main and no (MEMFS + VFS) yet.
         console.log(__FILE__, "custom_prerun")
